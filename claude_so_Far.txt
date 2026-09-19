@@ -1,0 +1,25 @@
+Here's everything we've locked in so far, end to end:
+
+**Project**: SIH problem statement — GNSS+INS fusion for offline/GPS-denied vehicle navigation (tunnels, parking structures, urban canyons, forested highways). Replaced your earlier landslide PS.
+
+**Target users/domain**: ride-hailing, logistics, quick-commerce, emergency responders — any vehicle without factory INS, phone dashboard-mounted, no OBD-II dependency required.
+
+**Hardware approach**: phone-only sensors (accelerometer, gyroscope, magnetometer/compass, GNSS). OBD-II dongle was considered earlier but the actual PS explicitly rules it out — must work without any vehicle connection.
+
+**Performance target**: drift under 10% of distance traveled — concretely, <5m drift over 50m in under a minute, or <100m drift over 1km at 60km/h in a tunnel.
+
+**The six required subsystems** (all now in the diagram above):
+1. **Initial alignment** — one-time per ride, detects phone pitch/roll/yaw vs. the car's driving direction using the gravity vector at rest + the first acceleration burst once driving starts.
+2. **Continuous calibration profile** — your latest improvement: instead of one calibration at install, noise floor and sensor bias are re-estimated at *every* ZUPT-detected stop throughout the ride (red lights, traffic), via a running average. Self-adapts to whichever vehicle/mount/conditions apply that specific ride.
+3. **AI speed & vibration filter** — the model you'll actually train: CNN+BiLSTM (Conv1D-32 → Conv1D-64 → BiLSTM-64), trained on IO-VNBD's "Synchronised V and S datasets" folder, phone accel/gyro windows (40 timesteps × 6 channels, 10Hz) as input, vehicle CAN speed/yaw as labels. Includes ZUPT baked in — forces speed to 0 during detected stops.
+4. **Heading fusion** — not trained, uses gyro+compass (Android's `TYPE_ROTATION_VECTOR`), classical sensor fusion.
+5. **Map-matching & kinematic constraints** — the biggest net-new piece from the full PS text: snaps the raw dead-reckoned trajectory onto actual OpenStreetMap roads using UKF + Hidden Markov map matching, plus non-holonomic constraints (car can't slide sideways). Likely your primary lever for hitting the drift benchmark.
+6. **AI-based GNSS+INS fusion engine** — a Kalman filter backbone with a learned correction layer (not just classical KF, since the PS explicitly wants "AI based"), blends in GNSS fixes when available, handles the millisecond-scale mode switch between GNSS-aided and pure dead-reckoning.
+
+**Deliverable structure** (per the PS): train models offline/cloud, export lightweight model, run inference on-device. Screening round specifically wants preliminary AI models + a position-plot on an IO-VNBD subset — that's your nearest concrete milestone, not the full app.
+
+**Model choice**: CNN+BiLSTM over XGBoost, given you have ~1 month and want best accuracy — XGBoost was the fallback if time were tighter.
+
+**Still open / not yet designed**: the actual map-matching implementation (whether to use an existing library like Fast Map Matching vs. building from scratch), the specific learned-correction architecture for the AI fusion engine, and the Android sensor/training code itself.
+
+Want to start on the map-matching library research, or the screening-round milestone (speed model + basic dead-reckoning position plot against IO-VNBD)?

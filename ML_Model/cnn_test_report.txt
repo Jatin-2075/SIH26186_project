@@ -1,0 +1,47 @@
+CNN TEST REPORT
+===============
+Generated: 2026-09-19 10:59:12.273941
+
+DATA
+----
+Source rows: 105974
+Training windows: 14827
+Validation windows: 3170
+Test windows: 3170
+Window size: 50 samples
+Window stride: 5 samples
+Input features: ACCELEROMETER X (m/s²), ACCELEROMETER Y (m/s²), ACCELEROMETER Z (m/s²), GYROSCOPE Yaw (rad/s), GYROSCOPE Pitch (rad/s), GYROSCOPE Roll (rad/s)
+
+TRAINING
+--------
+Epochs completed: 25
+Best validation AUC epoch: 15
+Stationary training ratio: 0.085048
+Speed mean (km/hr): 34.153133
+Speed standard deviation: 20.387880
+
+STATIONARY / ZUPT TEST METRICS
+------------------------------
+Accuracy: 0.978549
+AUC: 0.994157
+Precision: 0.779026
+Recall / Sensitivity: 0.958525
+F1 score: 0.859504
+Specificity: 0.980020
+Balanced accuracy: 0.969273
+ZUPT threshold: 0.390000
+True positives: 208
+True negatives: 2894
+False positives: 59
+False negatives: 9
+
+SPEED TEST METRICS
+------------------
+MAE (km/hr): 9.243930
+RMSE (km/hr): 11.738595
+R2: 0.740217
+
+ARTIFACTS
+---------
+Model: cnn_zupt_speed.keras
+Preprocessing: cnn_preprocessing.npz
